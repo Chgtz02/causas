@@ -1217,3 +1217,83 @@ input[type="text"]:focus, textarea:focus, select:focus {
     color: var(--text-muted);
     font-size: 0.8rem;
 }
+
+/* =========================================
+   Welcome Banner
+   ========================================= */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--accent-color), #818cf8);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    margin: 2rem 2.5rem 0;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.welcome-content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-content p {
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.welcome-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(4px);
+    min-width: 120px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .welcome-content h2 {
+        font-size: 1.5rem;
+    }
+}

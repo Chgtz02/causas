@@ -57,7 +57,10 @@
         <aside class="sidebar" id="sidebar">
             <div class="logo">
                 <i class="ph-fill ph-circles-three-plus"></i>
-                <span>CausasPortal</span>
+                <div style="display: flex; flex-direction: column;">
+                    <span>CausasPortal</span>
+                    <span style="font-size: 0.7rem; font-weight: 500; color: var(--text-muted); margin-top: -2px;">Pipelin :)</span>
+                </div>
                 <button class="btn-icon mobile-close" id="closeSidebarBtn" style="display: none;"><i class="ph ph-x"></i></button>
             </div>
             <nav class="nav-menu">
@@ -69,7 +72,7 @@
                 <a href="#" class="nav-item" id="nav-faq"><i class="ph ph-question"></i> Glosario / FAQ</a>
                 <a href="#" class="nav-item" id="nav-config"><i class="ph ph-gear"></i> Configuración</a>
             </nav>
-            <div class="user-profile">
+            <div class="user-profile" id="sidebarUserProfile" style="cursor: pointer;" title="Mi Perfil">
                 <div class="user-info">
                     <div class="user-name" id="currentUserName">Administrador</div>
                     <div class="user-role" id="currentUserRole">Desarrollo de Causas</div>
@@ -80,6 +83,20 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Welcome Banner -->
+            <div id="welcomeBanner" class="welcome-banner">
+                <div class="welcome-content">
+                    <h2 id="welcomeText">Hola, Administrador</h2>
+                    <p>Hoy es un gran día para seguir impulsando nuestras causas.</p>
+                </div>
+                <div class="welcome-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="statActiveProjects">0</span>
+                        <span class="stat-label">Causas Activas</span>
+                    </div>
+                </div>
+            </div>
+
             <header class="top-header">
                 <div class="header-title-group">
                     <button class="btn-icon mobile-menu-btn" id="openSidebarBtn" style="display: none;"><i class="ph ph-list"></i></button>
@@ -179,6 +196,36 @@
                 </div>
                 <div class="team-grid" id="directorioGrid">
                     <!-- Directorio items injected by JS -->
+                </div>
+            </div>
+
+            <div id="profileView" class="view-section" style="padding: 2rem 2.5rem; overflow-y: auto;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <h2 style="margin-bottom: 2rem;">Mi Perfil</h2>
+                    <div class="settings-section">
+                        <form id="profileForm" class="settings-grid" style="display: grid; gap: 1.5rem;">
+                            <div class="form-group" style="text-align: center; grid-column: span 2;">
+                                <img src="" alt="Avatar" id="profileAvatarPreview" class="team-member-avatar" style="width: 100px; height: 100px; margin: 0 auto 1rem; display: block;">
+                                <label for="upAvatar">URL del Avatar</label>
+                                <input type="text" id="upAvatar" placeholder="https://..." style="width: 100%;">
+                            </div>
+                            <div class="form-group">
+                                <label for="upName">Nombre Completo</label>
+                                <input type="text" id="upName" required style="width: 100%;">
+                            </div>
+                            <div class="form-group">
+                                <label for="upUsername">Nombre de Usuario</label>
+                                <input type="text" id="upUsername" required style="width: 100%;">
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label for="upPassword">Nueva Contraseña</label>
+                                <input type="password" id="upPassword" placeholder="Dejar en blanco para no cambiar" style="width: 100%;">
+                            </div>
+                            <div style="grid-column: span 2; display: flex; gap: 1rem; margin-top: 1rem;">
+                                <button type="submit" class="btn-primary" style="flex: 1;">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 

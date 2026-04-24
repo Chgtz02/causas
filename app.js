@@ -1077,10 +1077,13 @@ function setupInteractions() {
     const teamView = document.getElementById('teamView');
     const directorioView = document.getElementById('directorioView');
     const faqView = document.getElementById('faqView');
+    const profileView = document.getElementById('profileView');
 
     function hideAllViews() {
         [navTablero, navConfig, navEquipo, navDirectorio, navRendicion, navGerencial, navFaq].forEach(n => n?.classList.remove('active'));
-        [boardView, settingsView, teamView, directorioView, rendicionView, gerencialView, faqView].forEach(v => v?.classList.remove('active'));
+        [boardView, settingsView, teamView, directorioView, rendicionView, gerencialView, faqView, profileView].forEach(v => v?.classList.remove('active'));
+        // Hide banner in views other than tablero/gerencial/rendicion
+        document.getElementById('welcomeBanner').style.display = 'none';
         // Reset pipeline edit buttons
         document.getElementById('editPipelineBtn').style.display = 'none';
         document.getElementById('editRendicionPipelineBtn').style.display = 'none';
@@ -1091,6 +1094,8 @@ function setupInteractions() {
         hideAllViews();
         navGerencial.classList.add('active');
         gerencialView.classList.add('active');
+        document.getElementById('welcomeBanner').style.display = 'flex';
+        updateWelcomeBanner();
         document.getElementById('viewTitle').textContent = 'Pipeline Gerencial';
         document.getElementById('viewSubtitle').textContent = 'Vista ejecutiva de todas las causas — doble clic para detalles';
         renderGerencialBoard();
@@ -1102,6 +1107,8 @@ function setupInteractions() {
         hideAllViews();
         navTablero.classList.add('active');
         boardView.classList.add('active');
+        document.getElementById('welcomeBanner').style.display = 'flex';
+        updateWelcomeBanner();
         document.getElementById('viewTitle').textContent = 'Pipeline de Causas';
         document.getElementById('viewSubtitle').textContent = 'Gestiona el flujo de trabajo de tu equipo';
         
@@ -1117,6 +1124,8 @@ function setupInteractions() {
         hideAllViews();
         navRendicion.classList.add('active');
         rendicionView.classList.add('active');
+        document.getElementById('welcomeBanner').style.display = 'flex';
+        updateWelcomeBanner();
         document.getElementById('viewTitle').textContent = 'Rendición de Cuentas';
         document.getElementById('viewSubtitle').textContent = 'Seguimiento de entregables por causa';
         
@@ -1194,6 +1203,40 @@ function setupInteractions() {
 
     // Logout
     document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+
+    document.getElementById('sidebarUserProfile')?.addEventListener('click', () => {
+        hideAllViews();
+        document.getElementById('profileView').classList.add('active');
+        document.getElementById('viewTitle').textContent = 'Mi Perfil';
+        document.getElementById('viewSubtitle').textContent = 'Actualiza tu información personal';
+        renderProfile();
+    });
+
+    // Profile Form
+    document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('upName').value;
+        const username = document.getElementById('upUsername').value;
+        const avatar = document.getElementById('upAvatar').value;
+        const password = document.getElementById('upPassword').value;
+
+        currentUser.name = name;
+        currentUser.username = username;
+        currentUser.avatar = avatar;
+        if (password) currentUser.password = password;
+
+        // Update in teamUsers array
+        const uIdx = teamUsers.findIndex(u => u.id === currentUser.id);
+        if (uIdx > -1) teamUsers[uIdx] = { ...currentUser };
+
+        localStorage.setItem('causas_user', JSON.stringify(currentUser));
+        showApp(); // Refresh header/sidebar
+        updateWelcomeBanner();
+        alert('Perfil actualizado con éxito');
+        document.getElementById('upPassword').value = '';
+        
+        await upsertUser(currentUser);
+    });
 
     // Gerencial Filters
     let gerencialFilter = 'all';
@@ -1598,3 +1641,21 @@ function openModal(id) {
 
 // Start
 document.addEventListener('DOMContentLoaded', init);
+
+function renderProfile() {
+    if (!currentUser) return;
+    document.getElementById('upName').value = currentUser.name;
+    document.getElementById('upUsername').value = currentUser.username;
+    document.getElementById('upAvatar').value = currentUser.avatar || '';
+    document.getElementById('profileAvatarPreview').src = currentUser.avatar || getDefaultAvatar(currentUser.id);
+}
+
+function updateWelcomeBanner() {
+    if (!currentUser) return;
+    document.getElementById('welcomeText').textContent = `Hola, ${currentUser.name.split(' ')[0]}`;
+    const myProjects = projects.filter(p => p.assignee === currentUser.id);
+    document.getElementById('statActiveProjects').textContent = myProjects.length;
+    // Update label to be more specific
+    const label = document.querySelector('#welcomeBanner .stat-label');
+    if (label) label.textContent = 'Tus Causas Activas';
+}
