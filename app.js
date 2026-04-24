@@ -87,6 +87,7 @@ function renderAll() {
     renderTeam();
     renderDirectorio();
     setupDragAndDrop();
+    updateWelcomeBanner();
     // Show pipeline edit btn for the default tablero view
     document.getElementById('editPipelineBtn').style.display = 'block';
 }
