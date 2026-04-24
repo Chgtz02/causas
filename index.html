@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Gestión - Desarrollo de Causas</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconos Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="ph-fill ph-circles-three-plus"></i>
+                <span>CausasPortal</span>
+                <button class="btn-icon mobile-close" id="closeSidebarBtn" style="display: none;"><i class="ph ph-x"></i></button>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" id="nav-tablero"><i class="ph ph-kanban"></i> Tablero</a>
+                <a href="#" class="nav-item" id="nav-gerencial"><i class="ph ph-binoculars"></i> Pipeline Gerencial</a>
+                <a href="#" class="nav-item" id="nav-rendicion"><i class="ph ph-presentation-chart"></i> Rendición de Cuentas</a>
+                <a href="#" class="nav-item" id="nav-directorio"><i class="ph ph-folder-open"></i> Directorio de Causas</a>
+                <a href="#" class="nav-item" id="nav-equipo"><i class="ph ph-users"></i> Equipo</a>
+                <a href="#" class="nav-item" id="nav-faq"><i class="ph ph-question"></i> Glosario / FAQ</a>
+                <a href="#" class="nav-item" id="nav-config"><i class="ph ph-gear"></i> Configuración</a>
+            </nav>
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="user-name">Administrador</div>
+                    <div class="user-role">Desarrollo de Causas</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-title-group">
+                    <button class="btn-icon mobile-menu-btn" id="openSidebarBtn" style="display: none;"><i class="ph ph-list"></i></button>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <h1 id="viewTitle">Pipeline de Causas</h1>
+                            <button class="btn-icon" id="editPipelineBtn" title="Gestionar Fases"><i class="ph ph-sliders-horizontal"></i></button>
+                            <button class="btn-icon" id="editRendicionPipelineBtn" title="Gestionar Fases Rendición" style="display: none;"><i class="ph ph-sliders-horizontal"></i></button>
+                        </div>
+                        <p class="subtitle" id="viewSubtitle">Gestiona el flujo de trabajo de tu equipo</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" placeholder="Buscar..." id="searchInput">
+                    </div>
+                    <button class="btn-icon theme-toggle" id="themeToggleBtn" title="Cambiar tema">
+                        <i class="ph ph-sun"></i>
+                    </button>
+                    <div class="filter-group">
+                        <select id="filterAssignee" class="filter-select">
+                            <option value="all">Todos los miembros</option>
+                            <!-- Llenado dinámicamente -->
+                        </select>
+                    </div>
+                    <button class="btn-primary" id="newProjectBtn">
+                        <i class="ph ph-plus"></i> Nueva Causa
+                    </button>
+                </div>
+            </header>
+
+            <div id="boardView" class="view-section active">
+                <div class="board swimlane-board" id="kanbanBoard">
+                    <!-- Swimlane rows will be injected by JS -->
+                </div>
+            </div>
+
+            <div id="rendicionView" class="view-section" style="padding: 2rem 2.5rem; overflow-y: auto;">
+                <div class="board swimlane-board" id="rendicionBoard">
+                    <!-- Rendicion stages injected by JS -->
+                </div>
+            </div>
+
+            <!-- PIPELINE GERENCIAL VIEW -->
+            <div id="gerencialView" class="view-section gerencial-view">
+                <div class="gerencial-toolbar">
+                    <div class="gerencial-filters">
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-right:0.25rem;">Nivel</span>
+                        <button class="gerencial-filter-btn active" data-filter="all">Todas</button>
+                        <button class="gerencial-filter-btn" data-filter="AAAA" style="border-color:#ef444444; color:#ef4444;">AAAA</button>
+                        <button class="gerencial-filter-btn" data-filter="AAA" style="border-color:#f9731644; color:#f97316;">AAA</button>
+                        <button class="gerencial-filter-btn" data-filter="AA" style="border-color:#d9780644; color:#d97806;">AA</button>
+                        <button class="gerencial-filter-btn" data-filter="A" style="border-color:#3b82f644; color:#3b82f6;">A</button>
+                    </div>
+                    <div class="gerencial-search" style="margin-left:0;">
+                        <i class="ph ph-buildings"></i>
+                        <input type="text" id="gerencialDonorFilter" placeholder="Filtrar por donante...">
+                    </div>
+                    <div class="gerencial-search">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="gerencialSearch" placeholder="Buscar causa...">
+                    </div>
+                </div>
+                <div id="gerencialGrid" style="flex:1; overflow:hidden; display:flex;">
+                    <!-- Kanban columns injected by JS -->
+                </div>
+            </div>
+
+            <div id="teamView" class="view-section" style="padding: 2rem 2.5rem; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Miembros del Equipo</h2>
+                    <button class="btn-primary" id="newUserBtn"><i class="ph ph-user-plus"></i> Añadir Miembro</button>
+                </div>
+                <div class="team-grid" id="teamGrid">
+                    <!-- Team members injected by JS -->
+                </div>
+            </div>
+
+            <div id="directorioView" class="view-section" style="padding: 2rem 2.5rem; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Directorio de Causas</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <select id="filterCategory" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary);">
+                            <option value="">Todas las Categorías</option>
+                        </select>
+                        <select id="filterImportance" style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary);">
+                            <option value="">Todas las Importancias</option>
+                            <option value="AAAA">AAAA (FEMSA)</option>
+                            <option value="AAA">AAA (+50 MDP)</option>
+                            <option value="AA">AA (49-18 MDP)</option>
+                            <option value="A">A (<1MDD con rel.)</option>
+                            <option value="B,C">B, C (<1MDD varias)</option>
+                            <option value="D">D (<1MDD 1 causa)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="team-grid" id="directorioGrid">
+                    <!-- Directorio items injected by JS -->
+                </div>
+            </div>
+
+            <div id="faqView" class="view-section" style="padding: 2rem 2.5rem; overflow-y: auto;">
+                <div style="max-width: 900px; margin: 0 auto;">
+                    <h2 style="margin-bottom: 2rem;">Glosario de Prioridades y Servicios</h2>
+                    
+                    <div class="faq-container" style="display: grid; gap: 1.5rem;">
+                        <!-- AAAA -->
+                        <div class="settings-section" style="border-left: 5px solid #ef4444;">
+                            <h3 style="color: #ef4444; margin-bottom: 0.5rem;">AAAA (FEMSA)</h3>
+                            <p style="font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">Nivel más alto de atención</p>
+                            <ul style="list-style: none; padding-left: 0; display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                <li><i class="ph ph-check-circle" style="color: #ef4444;"></i> Diseño personalizado</li>
+                                <li><i class="ph ph-check-circle" style="color: #ef4444;"></i> Reporte con información curada y validada</li>
+                                <li><i class="ph ph-check-circle" style="color: #ef4444;"></i> Narrativa alineada al donante y a la campaña</li>
+                                <li><i class="ph ph-plus-circle" style="color: var(--text-muted);"></i> Opcional: video, experiencia, detalle físico, reporte impreso</li>
+                            </ul>
+                        </div>
+
+                        <!-- AAA -->
+                        <div class="settings-section" style="border-left: 5px solid #f97316;">
+                            <h3 style="color: #f97316; margin-bottom: 0.5rem;">AAA (+50 MDP y/o relacionamiento)</h3>
+                            <p style="font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">Nivel de atención prioritario</p>
+                            <ul style="list-style: none; padding-left: 0; display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                <li><i class="ph ph-check-circle" style="color: #f97316;"></i> Diseño personalizado</li>
+                                <li><i class="ph ph-check-circle" style="color: #f97316;"></i> Reporte con información curada y validada</li>
+                                <li><i class="ph ph-check-circle" style="color: #f97316;"></i> Narrativa alineada al donante y a la campaña</li>
+                                <li><i class="ph ph-plus-circle" style="color: var(--text-muted);"></i> Opcional: video, experiencia, detalle físico, reporte impreso</li>
+                            </ul>
+                        </div>
+
+                        <!-- AA -->
+                        <div class="settings-section" style="border-left: 5px solid #eab308;">
+                            <h3 style="color: #eab308; margin-bottom: 0.5rem;">AA (49-18 MDP y/o relacionamiento)</h3>
+                            <p style="font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">Nivel de atención importante</p>
+                            <ul style="list-style: none; padding-left: 0; display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                <li><i class="ph ph-check-circle" style="color: #eab308;"></i> Diseño con plantilla</li>
+                                <li><i class="ph ph-check-circle" style="color: #eab308;"></i> Reporte con información curada y validada</li>
+                                <li><i class="ph ph-check-circle" style="color: #eab308;"></i> Narrativa alineada al donante y a la campaña</li>
+                                <li><i class="ph ph-plus-circle" style="color: var(--text-muted);"></i> Opcional: video, experiencia, detalle físico, reporte impreso</li>
+                            </ul>
+                        </div>
+
+                        <!-- A -->
+                        <div class="settings-section" style="border-left: 5px solid #3b82f6;">
+                            <h3 style="color: #3b82f6; margin-bottom: 0.5rem;">A (< 1MDD con relacionamiento)</h3>
+                            <p style="font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">Nivel de atención intermedio</p>
+                            <ul style="list-style: none; padding-left: 0; display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                <li><i class="ph ph-check-circle" style="color: #3b82f6;"></i> Diseño con plantilla</li>
+                                <li><i class="ph ph-check-circle" style="color: #3b82f6;"></i> Reporte con información curada y validada</li>
+                                <li><i class="ph ph-check-circle" style="color: #3b82f6;"></i> Narrativa alineada al donante y a la campaña</li>
+                            </ul>
+                        </div>
+
+                        <!-- B, C and D -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="settings-section" style="border-left: 5px solid #6366f1;">
+                                <h3 style="color: #6366f1; margin-bottom: 0.5rem;">B, C</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Donantes < 1MDD con varias causas</p>
+                                <p style="font-size: 0.9rem;"><i class="ph ph-package" style="color: #6366f1;"></i> Kit de materiales (plantilla) + guías prácticas</p>
+                            </div>
+                            <div class="settings-section" style="border-left: 5px solid #8b5cf6;">
+                                <h3 style="color: #8b5cf6; margin-bottom: 0.5rem;">D</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Donantes < 1MDD con 1 sola causa</p>
+                                <p style="font-size: 0.9rem;"><i class="ph ph-package" style="color: #8b5cf6;"></i> Kit de materiales (plantilla) + guías prácticas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settingsView" class="view-section" style="padding: 2rem 2.5rem;">
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h2>Fases del Pipeline (Tablero)</h2>
+                        <ul id="settingsStagesList" class="stages-list"></ul>
+                        <div class="add-stage-container">
+                            <input type="text" id="settingsNewStageInput" placeholder="Nombre de nueva fase...">
+                            <button id="settingsAddStageBtn" class="btn-secondary">Añadir Fase</button>
+                        </div>
+                    </div>
+                    <div class="settings-section" style="margin-top: 2rem;">
+                        <h2>Fases del Pipeline (Rendición)</h2>
+                        <ul id="settingsRendicionStagesList" class="stages-list"></ul>
+                        <div class="add-stage-container">
+                            <input type="text" id="settingsNewRendicionStageInput" placeholder="Nombre de nueva fase rendición...">
+                            <button id="settingsAddRendicionStageBtn" class="btn-secondary">Añadir Fase</button>
+                        </div>
+                    </div>
+                    <div class="settings-section" style="margin-top: 2rem;">
+                        <h2>Categorías de Proyectos</h2>
+                        <ul id="settingsCategoriesList" class="stages-list"></ul>
+                        <div class="add-stage-container" style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="text" id="settingsNewCatInput" placeholder="Nombre de categoría..." style="flex-grow: 1;">
+                            <input type="color" id="settingsNewCatColor" value="#8b5cf6" style="width: 40px; height: 38px; padding: 0; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); cursor: pointer;">
+                            <button id="settingsAddCatBtn" class="btn-secondary">Añadir Categoría</button>
+                        </div>
+                    </div>
+                    <div class="settings-section" style="margin-top: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h2>Proyectos</h2>
+                            <button class="btn-primary btn-sm" id="settingsNewProjectBtn"><i class="ph ph-plus"></i> Nuevo</button>
+                        </div>
+                        <ul id="settingsProjectsList" class="stages-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Template para la tarjeta de tarea (antes proyecto) -->
+    <template id="taskCardTemplate">
+        <div class="project-card" draggable="true">
+            <div class="card-header" style="justify-content: flex-end; gap: 0.25rem;">
+                <button class="btn-icon btn-edit-task" title="Editar Tarea" style="font-size: 1rem;"><i class="ph ph-pencil"></i></button>
+                <button class="btn-icon btn-delete-task" title="Eliminar Tarea" style="font-size: 1rem;"><i class="ph ph-trash"></i></button>
+            </div>
+            <h3 class="card-title"></h3>
+            <div class="donor-tag" style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 500;"></div>
+            <p class="card-desc"></p>
+            <div class="card-footer">
+                <div class="assignee">
+                    <img src="" alt="Avatar" class="avatar-sm">
+                    <span class="assignee-name"></span>
+                </div>
+                <div class="date-info">
+                    <i class="ph ph-clock"></i>
+                    <span class="date-text"></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modales -->
+    <div class="modal-overlay" id="newProjectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="projectModalTitle">Nueva Causa</h2>
+                <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="newProjectForm" class="modal-body">
+                <div class="form-group">
+                    <label>Título de la Causa</label>
+                    <input type="text" id="npTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="npDesc" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="npCategory">
+                            <!-- Llenado dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Responsable Principal</label>
+                        <select id="npAssignee">
+                            <!-- Llenado dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Importancia</label>
+                        <select id="npImportance">
+                            <option value="">Seleccionar...</option>
+                            <option value="AAAA">AAAA (FEMSA)</option>
+                            <option value="AAA">AAA (+50 MDP)</option>
+                            <option value="AA">AA (49-18 MDP)</option>
+                            <option value="A">A (<1MDD con rel.)</option>
+                            <option value="B,C">B, C (<1MDD varias)</option>
+                            <option value="D">D (<1MDD 1 causa)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Donante</label>
+                        <input type="text" id="npDonor" placeholder="Nombre del donante">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Frontliner</label>
+                        <input type="text" id="npFrontliner" placeholder="Persona clave">
+                    </div>
+                    <div class="form-group">
+                        <label>Periodo de Entrega</label>
+                        <input type="text" id="npDelivery" placeholder="Ej: Q3 2026">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Liga a su Carpeta</label>
+                    <input type="url" id="npFolderLink" placeholder="https://drive.google.com/...">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary close-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Causa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="newTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nueva Tarea</h2>
+                <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="newTaskForm" class="modal-body">
+                <input type="hidden" id="ntProjectId">
+                <input type="hidden" id="ntStageId">
+                <div class="form-group">
+                    <label>Título de la Tarea</label>
+                    <input type="text" id="ntTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="ntDesc" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Responsable</label>
+                    <select id="ntAssignee">
+                        <!-- Llenado dinámicamente -->
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary close-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Crear Tarea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="projectDetailsModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap: 1rem;">
+                    <span id="pdCategoryBadge" class="category-badge"></span>
+                    <h2 id="pdTitle"></h2>
+                </div>
+                <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body two-columns">
+                <div class="pd-main">
+                    <p id="pdDesc" class="pd-description"></p>
+                    
+                    <div class="pd-section">
+                        <h3><i class="ph ph-check-square"></i> Pasos Específicos (Checklist)</h3>
+                        <div class="progress-bar-container"><div class="progress-bar" id="pdProgress"></div></div>
+                        <ul id="pdChecklist" class="checklist"></ul>
+                        <div class="add-task-container">
+                            <input type="text" id="newTaskInput" placeholder="Añadir nuevo paso...">
+                            <button id="addTaskBtn" class="btn-secondary btn-sm">Añadir</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="pd-sidebar">
+                    <div class="pd-section">
+                        <h3>Responsable</h3>
+                        <div class="assignee-display">
+                            <img id="pdAssigneeAvatar" src="" alt="Avatar" class="avatar-sm">
+                            <span id="pdAssigneeName"></span>
+                        </div>
+                    </div>
+                    <div class="pd-section communication-section">
+                        <h3><i class="ph ph-chats"></i> Comentarios Internos</h3>
+                        <div id="pdComments" class="comments-list"></div>
+                        <div class="add-comment-container">
+                            <textarea id="newCommentInput" rows="2" placeholder="Escribe un comentario..."></textarea>
+                            <button id="addCommentBtn" class="btn-primary btn-sm">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editPipelineModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pipelineModalTitle">Gestionar Fases</h2>
+                <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <ul id="pipelineStagesList" class="stages-list"></ul>
+                <div class="add-stage-container">
+                    <input type="text" id="newStageInput" placeholder="Nombre de nueva fase...">
+                    <button id="addStageBtn" class="btn-secondary">Añadir Fase</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Añadir Miembro</h2>
+                <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="userForm" class="modal-body">
+                <div class="form-group">
+                    <label>Nombre del Usuario</label>
+                    <input type="text" id="nuName" required>
+                </div>
+                <div class="form-group">
+                    <label>Rol (Ej. Abogado, Investigador)</label>
+                    <input type="text" id="nuRole" placeholder="Miembro del Equipo">
+                </div>
+                <div class="form-group">
+                    <label>URL de la Imagen (Opcional)</label>
+                    <input type="url" id="nuAvatar" placeholder="https://ejemplo.com/mifoto.jpg">
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">Si se deja en blanco, se generará una ilustración divertida por defecto.</small>
+                </div>
+                <div class="two-columns">
+                    <div class="form-group">
+                        <label>Usuario (para login)</label>
+                        <input type="text" id="nuUsername" placeholder="nombre.usuario">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="nuPassword" placeholder="••••••••">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary close-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal-overlay" id="deleteConfirmModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding-top: 2rem;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none;">
+                <h2 id="deleteModalTitle" style="color: #f87171;">Eliminar</h2>
+            </div>
+            <div class="modal-body" style="padding-top: 0;">
+                <p id="deleteModalText" style="color: var(--text-secondary); margin-bottom: 2rem;">¿Estás seguro?</p>
+                <div class="modal-footer" style="justify-content: center; border-top: none;">
+                    <button type="button" class="btn-secondary close-modal">Cancelar</button>
+                    <button type="button" class="btn-primary" id="confirmDeleteBtn" style="background-color: #ef4444; border-color: #ef4444;">Sí, Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CAUSE DETAIL MODAL (Pipeline Gerencial) -->
+    <div class="modal-overlay" id="causeDetailModal">
+        <div class="modal-content modal-xl">
+            <div class="modal-header">
+                <div>
+                    <h2 id="causeDetailTitle">Nombre de la Causa</h2>
+                    <div id="causeDetailBadges" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;"></div>
+                </div>
+                <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh;">
+                <div id="causeDetailMeta" class="cause-detail-meta"></div>
+                <div class="cause-detail-tabs">
+                    <button class="cause-tab-btn active" data-tab="tablero">
+                        <i class="ph ph-kanban"></i> Pipeline Operacional
+                    </button>
+                    <button class="cause-tab-btn" data-tab="rendicion">
+                        <i class="ph ph-presentation-chart"></i> Rendici&#243;n de Cuentas
+                    </button>
+                </div>
+                <div id="causeDetailPipeline" class="cause-detail-pipeline"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
