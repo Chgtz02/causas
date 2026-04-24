@@ -22,6 +22,7 @@ let currentOpenTaskId = null;
 let editingProjectId = null;
 let editingTaskId = null;
 let currentDeleteAction = null;
+let currentUser = null;
 
 // DOM Elements
 const boardElement = document.getElementById('kanbanBoard');
@@ -38,6 +39,46 @@ function getDefaultAvatar(seed) {
 async function init() {
     setupInteractions();
     await loadData();
+    checkAuth();
+}
+
+function checkAuth() {
+    const savedUser = localStorage.getItem('causas_user');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        // Verify user still exists in teamUsers
+        const exists = teamUsers.find(u => u.id === currentUser.id);
+        if (exists) {
+            currentUser = exists;
+            showApp();
+            renderAll();
+        } else {
+            handleLogout();
+        }
+    } else {
+        showLogin();
+    }
+}
+
+function showLogin() {
+    document.getElementById('loginScreen').classList.add('active');
+    document.querySelector('.app-container').style.display = 'none';
+}
+
+function showApp() {
+    document.getElementById('loginScreen').classList.remove('active');
+    document.querySelector('.app-container').style.display = 'flex';
+    document.getElementById('currentUserName').textContent = currentUser.name;
+    document.getElementById('currentUserRole').textContent = currentUser.role || 'Miembro del Equipo';
+}
+
+function handleLogout() {
+    localStorage.removeItem('causas_user');
+    currentUser = null;
+    location.reload();
+}
+
+function renderAll() {
     populateSelects();
     renderBoard();
     renderRendicionBoard();
@@ -1130,6 +1171,29 @@ function setupInteractions() {
         document.getElementById('viewSubtitle').textContent = 'Niveles de prioridad y servicios';
         if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
     });
+
+    // Login Form
+    document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userVal = document.getElementById('loginUsername').value;
+        const passVal = document.getElementById('loginPassword').value;
+        const errorEl = document.getElementById('loginError');
+
+        const user = teamUsers.find(u => u.username === userVal && u.password === passVal);
+        
+        if (user) {
+            currentUser = user;
+            localStorage.setItem('causas_user', JSON.stringify(user));
+            errorEl.style.display = 'none';
+            showApp();
+            renderAll();
+        } else {
+            errorEl.style.display = 'flex';
+        }
+    });
+
+    // Logout
+    document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
 
     // Gerencial Filters
     let gerencialFilter = 'all';

@@ -13,7 +13,46 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-overlay active">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="ph-fill ph-circles-three-plus"></i>
+                </div>
+                <h2>Bienvenido de nuevo</h2>
+                <p>Ingresa tus credenciales para acceder al Portal de Causas</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginUsername">Usuario</label>
+                    <div class="input-with-icon">
+                        <i class="ph ph-user"></i>
+                        <input type="text" id="loginUsername" placeholder="Tu nombre de usuario" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <div class="input-with-icon">
+                        <i class="ph ph-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <div id="loginError" class="login-error" style="display: none;">
+                    <i class="ph ph-warning-circle"></i>
+                    <span>Credenciales incorrectas</span>
+                </div>
+                <button type="submit" class="btn-primary btn-login">
+                    Iniciar Sesión <i class="ph ph-arrow-right"></i>
+                </button>
+            </form>
+            <div class="login-footer">
+                <p>¿Olvidaste tu contraseña? Contacta al administrador.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" style="display: none;">
         <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="logo">
@@ -32,9 +71,10 @@
             </nav>
             <div class="user-profile">
                 <div class="user-info">
-                    <div class="user-name">Administrador</div>
-                    <div class="user-role">Desarrollo de Causas</div>
+                    <div class="user-name" id="currentUserName">Administrador</div>
+                    <div class="user-role" id="currentUserRole">Desarrollo de Causas</div>
                 </div>
+                <button class="btn-icon" id="logoutBtn" title="Cerrar Sesión" style="margin-left: auto; color: var(--text-muted);"><i class="ph ph-sign-out"></i></button>
             </div>
         </aside>
 
