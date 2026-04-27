@@ -286,7 +286,7 @@ function createTaskCard(task) {
         card.querySelector('.assignee-name').textContent = 'Sin Asignar';
         card.querySelector('.avatar-sm').src = getDefaultAvatar('unassigned');
     }
-    card.querySelector('.date-text').textContent = task.date;
+    card.querySelector('.date-text').textContent = task.due_date ? `Vence: ${task.due_date}` : (task.date || 'Sin fecha');
     
     // Edit Task
     card.querySelector('.btn-edit-task').addEventListener('click', (e) => {
@@ -298,6 +298,7 @@ function createTaskCard(task) {
         document.getElementById('ntTitle').value = task.title;
         document.getElementById('ntDesc').value = task.description || '';
         document.getElementById('ntAssignee').value = task.assignee || '';
+        document.getElementById('ntDueDate').value = task.due_date || '';
         openModal('newTaskModal');
     });
 
@@ -909,6 +910,7 @@ function renderDetailPipeline(projectId, tab) {
                 <div class="detail-task-chip">
                     ${t.title}
                     ${t.description ? `<span>${t.description.substring(0, 60)}${t.description.length > 60 ? '…' : ''}</span>` : ''}
+                    ${t.due_date ? `<span style="font-size: 0.65rem; color: var(--cat-legal-text); display: flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem;"><i class="ph ph-clock"></i> Vence: ${t.due_date}</span>` : ''}
                 </div>
             `).join('')
             : `<div class="detail-empty-stage">Sin entregables</div>`;
@@ -1529,6 +1531,7 @@ function setupInteractions() {
                 task.title = document.getElementById('ntTitle').value;
                 task.description = document.getElementById('ntDesc').value || null;
                 task.assignee = document.getElementById('ntAssignee').value || null;
+                task.due_date = document.getElementById('ntDueDate').value || null;
                 // Not changing project_id or status here, drag&drop handles status
                 
                 renderBoard();
@@ -1547,6 +1550,7 @@ function setupInteractions() {
                 title: document.getElementById('ntTitle').value,
                 description: document.getElementById('ntDesc').value || null,
                 assignee: document.getElementById('ntAssignee').value || null,
+                due_date: document.getElementById('ntDueDate').value || null,
                 date: new Date().toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })
             };
             
