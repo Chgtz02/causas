@@ -333,6 +333,12 @@ body {
     gap: 0.5rem;
     border-right: 1px solid var(--border-subtle);
     padding-right: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.swimlane-project-info:hover {
+    background-color: var(--bg-base);
 }
 
 .swimlane-project-title {
@@ -648,6 +654,29 @@ body {
     max-width: 800px;
 }
 
+#projectDetailsModal {
+    justify-content: flex-end;
+    align-items: stretch;
+}
+
+#projectDetailsModal .modal-content {
+    width: 100%;
+    max-width: 600px;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border-left: 1px solid var(--border-subtle);
+    border-top: none;
+    border-bottom: none;
+    border-right: none;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+#projectDetailsModal.active .modal-content {
+    transform: translateX(0);
+}
+
 .modal-header {
     padding: 1.5rem;
     border-bottom: 1px solid var(--border-subtle);
@@ -777,6 +806,14 @@ input[type="text"]:focus, textarea:focus, select:focus {
 .checklist input[type="checkbox"] {
     accent-color: var(--accent-color);
     width: 1.1rem; height: 1.1rem;
+}
+.checklist li .delete-checklist-btn {
+    margin-left: auto;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+.checklist li:hover .delete-checklist-btn {
+    opacity: 1;
 }
 .add-task-container {
     display: flex;
