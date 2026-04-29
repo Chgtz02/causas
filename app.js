@@ -217,7 +217,7 @@ function renderBoard() {
             </div>
         `;
         infoElement.addEventListener('click', () => {
-            openProjectDetailsModal(project.id);
+            openProjectDescModal(project.id);
         });
         rowElement.appendChild(infoElement);
 
@@ -322,6 +322,10 @@ function createTaskCard(task) {
                 await deleteTaskDB(task.id);
             }
         );
+    });
+
+    card.addEventListener('click', () => {
+        openTaskDetailsModal(task.id);
     });
 
     card.addEventListener('dragstart', handleDragStart);
@@ -1019,7 +1023,7 @@ function renderRendicionBoard() {
             </div>
         `;
         infoElement.addEventListener('click', () => {
-            openProjectDetailsModal(project.id);
+            openProjectDescModal(project.id);
         });
         rowElement.appendChild(infoElement);
 
@@ -1622,49 +1626,27 @@ function setupInteractions() {
         }
     });
 
-    // Checklist inside Project Details Modal
-    document.getElementById('addTaskBtn')?.addEventListener('click', async () => {
-        const input = document.getElementById('newTaskInput');
+    // Subtasks inside Task Details Modal
+    document.getElementById('addSubtaskBtn')?.addEventListener('click', async () => {
+        const input = document.getElementById('newSubtaskInput');
         const text = input.value.trim();
-        if (!text || !currentDetailProjectId) return;
+        if (!text || !currentDetailTaskId) return;
         
-        const project = projects.find(p => p.id === currentDetailProjectId);
-        if (project) {
-            if (!project.checklist) project.checklist = [];
-            project.checklist.push({ text, completed: false });
+        const task = tasks.find(t => t.id === currentDetailTaskId);
+        if (task) {
+            if (!task.checklist) task.checklist = [];
+            task.checklist.push({ text, completed: false });
             input.value = '';
             
-            await upsertProject(project);
-            renderChecklist(project.checklist);
+            await upsertTask(task);
+            renderTaskChecklist(task.checklist);
         }
     });
 
-    document.getElementById('newTaskInput')?.addEventListener('keypress', async (e) => {
+    document.getElementById('newSubtaskInput')?.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            document.getElementById('addTaskBtn').click();
-        }
-    });
-
-    // Comments inside Project Details Modal
-    document.getElementById('addCommentBtn')?.addEventListener('click', async () => {
-        const input = document.getElementById('newCommentInput');
-        const text = input.value.trim();
-        if (!text || !currentDetailProjectId || !currentUser) return;
-        
-        const project = projects.find(p => p.id === currentDetailProjectId);
-        if (project) {
-            if (!project.comments) project.comments = [];
-            project.comments.push({
-                user_id: currentUser.id,
-                user_name: currentUser.name,
-                text: text,
-                date: new Date().toLocaleDateString('es-ES', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-            });
-            input.value = '';
-            
-            await upsertProject(project);
-            renderComments(project.comments);
+            document.getElementById('addSubtaskBtn').click();
         }
     });
 }
@@ -1717,20 +1699,31 @@ function updateWelcomeBanner() {
     if (label) label.textContent = 'Tus Causas Activas';
 }
 
-let currentDetailProjectId = null;
+let currentDetailTaskId = null;
 
-function openProjectDetailsModal(projectId) {
+function openProjectDescModal(projectId) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
-    currentDetailProjectId = projectId;
+    document.getElementById('pdmTitle').textContent = project.title;
+    document.getElementById('pdmDesc').textContent = project.description || 'Sin descripción.';
     
-    document.getElementById('pdTitle').textContent = project.title;
-    document.getElementById('pdDesc').textContent = project.description || 'Sin descripción.';
+    openModal('projectDescModal');
+}
+
+function openTaskDetailsModal(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
     
-    const cat = categories[project.category];
-    const catBadge = document.getElementById('pdCategoryBadge');
-    if (cat) {
+    currentDetailTaskId = taskId;
+    
+    document.getElementById('tdTitle').textContent = task.title;
+    document.getElementById('tdDesc').textContent = task.description || 'Sin descripción.';
+    
+    const project = projects.find(p => p.id === task.project_id);
+    const catBadge = document.getElementById('tdCategoryBadge');
+    if (project && project.category && categories[project.category]) {
+        const cat = categories[project.category];
         catBadge.textContent = cat.label;
         catBadge.style.backgroundColor = `${cat.color}33`;
         catBadge.style.color = cat.color;
@@ -1739,25 +1732,24 @@ function openProjectDetailsModal(projectId) {
         catBadge.style.display = 'none';
     }
     
-    const user = teamUsers.find(u => u.id === project.assignee);
-    document.getElementById('pdAssigneeName').textContent = user ? user.name : 'Sin Asignar';
-    document.getElementById('pdAssigneeAvatar').src = user ? (user.avatar || getDefaultAvatar(user.id)) : getDefaultAvatar('unassigned');
+    const user = teamUsers.find(u => u.id === task.assignee);
+    document.getElementById('tdAssigneeName').textContent = user ? user.name : 'Sin Asignar';
+    document.getElementById('tdAssigneeAvatar').src = user ? (user.avatar || getDefaultAvatar(user.id)) : getDefaultAvatar('unassigned');
     
-    renderChecklist(project.checklist || []);
-    renderComments(project.comments || []);
+    renderTaskChecklist(task.checklist || []);
     
-    openModal('projectDetailsModal');
+    openModal('taskDetailsModal');
 }
 
-function renderChecklist(checklist) {
-    const listEl = document.getElementById('pdChecklist');
-    const progressEl = document.getElementById('pdProgress');
+function renderTaskChecklist(checklist) {
+    const listEl = document.getElementById('tdChecklist');
+    const progressEl = document.getElementById('tdProgress');
     if (!listEl) return;
     
     listEl.innerHTML = '';
     
     if (checklist.length === 0) {
-        listEl.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">No hay pasos aún.</li>';
+        listEl.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">No hay subtareas aún.</li>';
         if (progressEl) progressEl.style.width = '0%';
         return;
     }
@@ -1779,22 +1771,22 @@ function renderChecklist(checklist) {
         const checkbox = li.querySelector('input[type="checkbox"]');
         checkbox.addEventListener('change', async (e) => {
             checklist[index].completed = e.target.checked;
-            const project = projects.find(p => p.id === currentDetailProjectId);
-            if (project) {
-                project.checklist = checklist;
-                await upsertProject(project);
-                renderChecklist(checklist);
+            const task = tasks.find(t => t.id === currentDetailTaskId);
+            if (task) {
+                task.checklist = checklist;
+                await upsertTask(task);
+                renderTaskChecklist(checklist);
             }
         });
         
         const deleteBtn = li.querySelector('.delete-checklist-btn');
         deleteBtn.addEventListener('click', async () => {
             checklist.splice(index, 1);
-            const project = projects.find(p => p.id === currentDetailProjectId);
-            if (project) {
-                project.checklist = checklist;
-                await upsertProject(project);
-                renderChecklist(checklist);
+            const task = tasks.find(t => t.id === currentDetailTaskId);
+            if (task) {
+                task.checklist = checklist;
+                await upsertTask(task);
+                renderTaskChecklist(checklist);
             }
         });
         
@@ -1805,32 +1797,4 @@ function renderChecklist(checklist) {
         const pct = Math.round((completedCount / checklist.length) * 100);
         progressEl.style.width = `${pct}%`;
     }
-}
-
-function renderComments(comments) {
-    const commentsEl = document.getElementById('pdComments');
-    if (!commentsEl) return;
-    
-    commentsEl.innerHTML = '';
-    
-    if (!comments || comments.length === 0) {
-        commentsEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">No hay comentarios aún.</div>';
-        return;
-    }
-    
-    comments.forEach(comment => {
-        const div = document.createElement('div');
-        div.className = 'comment';
-        
-        const author = teamUsers.find(u => u.id === comment.user_id) || { name: comment.user_name || 'Usuario', avatar: null };
-        
-        div.innerHTML = `
-            <div class="comment-header">
-                <span class="comment-author">${author.name}</span>
-                <span class="comment-time">${comment.date}</span>
-            </div>
-            <div class="comment-text">${comment.text}</div>
-        `;
-        commentsEl.appendChild(div);
-    });
 }

@@ -654,12 +654,12 @@ body {
     max-width: 800px;
 }
 
-#projectDetailsModal {
+#taskDetailsModal {
     justify-content: flex-end;
     align-items: stretch;
 }
 
-#projectDetailsModal .modal-content {
+#taskDetailsModal .modal-content {
     width: 100%;
     max-width: 600px;
     height: 100vh;
@@ -673,7 +673,7 @@ body {
     transition: transform 0.3s ease-in-out;
 }
 
-#projectDetailsModal.active .modal-content {
+#taskDetailsModal.active .modal-content {
     transform: translateX(0);
 }
 

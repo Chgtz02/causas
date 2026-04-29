@@ -465,46 +465,55 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="projectDetailsModal">
-        <div class="modal-content modal-lg">
+    <!-- Modal desplegable desde la derecha para Detalles de Tarea y Subtareas -->
+    <div class="modal-overlay" id="taskDetailsModal">
+        <div class="modal-content">
             <div class="modal-header">
                 <div style="display:flex; align-items:center; gap: 1rem;">
-                    <span id="pdCategoryBadge" class="category-badge"></span>
-                    <h2 id="pdTitle"></h2>
+                    <span id="tdCategoryBadge" class="category-badge"></span>
+                    <h2 id="tdTitle"></h2>
                 </div>
                 <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
             </div>
-            <div class="modal-body two-columns">
-                <div class="pd-main">
-                    <p id="pdDesc" class="pd-description"></p>
+            <div class="modal-body">
+                <div class="pd-main" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">Descripción</h3>
+                        <p id="tdDesc" class="pd-description" style="white-space: pre-line; font-size: 0.9rem; line-height: 1.5;"></p>
+                    </div>
                     
                     <div class="pd-section">
-                        <h3><i class="ph ph-check-square"></i> Pasos Específicos (Checklist)</h3>
-                        <div class="progress-bar-container"><div class="progress-bar" id="pdProgress"></div></div>
-                        <ul id="pdChecklist" class="checklist"></ul>
+                        <h3><i class="ph ph-check-square"></i> Subtareas (To-Do List)</h3>
+                        <div class="progress-bar-container"><div class="progress-bar" id="tdProgress"></div></div>
+                        <ul id="tdChecklist" class="checklist"></ul>
                         <div class="add-task-container">
-                            <input type="text" id="newTaskInput" placeholder="Añadir nuevo paso...">
-                            <button id="addTaskBtn" class="btn-secondary btn-sm">Añadir</button>
+                            <input type="text" id="newSubtaskInput" placeholder="Añadir subtarea...">
+                            <button id="addSubtaskBtn" class="btn-secondary btn-sm">Añadir</button>
                         </div>
                     </div>
-                </div>
-                <div class="pd-sidebar">
+
                     <div class="pd-section">
-                        <h3>Responsable</h3>
-                        <div class="assignee-display">
-                            <img id="pdAssigneeAvatar" src="" alt="Avatar" class="avatar-sm">
-                            <span id="pdAssigneeName"></span>
-                        </div>
-                    </div>
-                    <div class="pd-section communication-section">
-                        <h3><i class="ph ph-chats"></i> Comentarios Internos</h3>
-                        <div id="pdComments" class="comments-list"></div>
-                        <div class="add-comment-container">
-                            <textarea id="newCommentInput" rows="2" placeholder="Escribe un comentario..."></textarea>
-                            <button id="addCommentBtn" class="btn-primary btn-sm">Enviar</button>
+                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">Responsable</h3>
+                        <div class="assignee-display" style="display: flex; align-items: center; gap: 0.75rem;">
+                            <img id="tdAssigneeAvatar" src="" alt="Avatar" class="avatar-sm">
+                            <span id="tdAssigneeName"></span>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver descripción completa del Proyecto -->
+    <div class="modal-overlay" id="projectDescModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pdmTitle"></h2>
+                <button class="btn-icon close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">Descripción de la Causa</h3>
+                <p id="pdmDesc" style="white-space: pre-line; font-size: 0.95rem; color: var(--text-primary); line-height: 1.5;"></p>
             </div>
         </div>
     </div>
