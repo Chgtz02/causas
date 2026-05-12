@@ -989,42 +989,45 @@ function renderRendicionBoard() {
     });
     board.appendChild(headerRow);
 
-    // Project Rows (Same as main board)
-    filteredProjects.forEach(project => {
+    // Group projects by donor
+    const donorsMap = {};
+    filteredProjects.forEach(p => {
+        const donorName = p.donor ? p.donor.trim() : 'Sin Donante';
+        if (!donorsMap[donorName]) {
+            donorsMap[donorName] = { name: donorName, projects: [] };
+        }
+        donorsMap[donorName].projects.push(p);
+    });
+    
+    const donors = Object.values(donorsMap).sort((a, b) => {
+        if (a.name === 'Sin Donante') return 1;
+        if (b.name === 'Sin Donante') return -1;
+        return a.name.localeCompare(b.name);
+    });
+
+    donors.forEach(donorData => {
         const rowElement = document.createElement('div');
         rowElement.className = 'swimlane-row';
         
-        // Project Info (Left Column) - Identical to main board
-        const cat = categories[project.category];
-        const badgeHtml = cat ? `<span class="category-badge" style="background-color: ${cat.color}33; color: ${cat.color};">${cat.label}</span>` : '';
-        
-        let importanceHtml = '';
-        if (project.importance) {
-            const colors = { 'AAAA': '#ef4444', 'AAA': '#f97316', 'AA': '#eab308', 'A': '#3b82f6', 'B,C': '#6366f1', 'D': '#8b5cf6' };
-            const color = colors[project.importance] || 'var(--text-secondary)';
-            importanceHtml = `<span style="background-color: ${color}22; color: ${color}; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.7rem; display: inline-block;">${project.importance}</span>`;
-        }
+        const causesHtml = donorData.projects.map(p => {
+            const cat = categories[p.category];
+            const color = cat ? cat.color : 'var(--text-secondary)';
+            return `<div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem; display: flex; align-items: flex-start; gap: 0.3rem;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${color}; margin-top: 0.2rem; flex-shrink: 0;"></span><span>${p.title}</span></div>`;
+        }).join('');
 
         const infoElement = document.createElement('div');
         infoElement.className = 'swimlane-project-info';
         infoElement.innerHTML = `
-            <div style="display: flex; gap: 0.25rem; margin-bottom: 0.5rem;">
-                ${badgeHtml}
-                ${importanceHtml}
+            <div class="swimlane-project-title" style="display:flex; align-items:center; gap:0.5rem; margin-bottom: 0.5rem;">
+                <i class="ph ph-hand-heart" style="color:var(--accent-color);"></i> ${donorData.name}
             </div>
-            <div class="swimlane-project-title">${project.title}</div>
-            <div style="font-size: 0.7rem; background: var(--accent-color)15; color: var(--accent-color); padding: 0.2rem 0.5rem; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; margin-bottom: 0.5rem;">
-                <i class="ph ph-hand-heart"></i> ${project.donor || 'Sin Donante'}
+            <div style="margin-bottom: 0.75rem;">
+                <span style="font-size:0.7rem; background:var(--bg-elevated); padding:0.2rem 0.5rem; border-radius:4px; border:1px solid var(--border-subtle); font-weight: 500;">${donorData.projects.length} Causa(s)</span>
             </div>
-            <div class="swimlane-project-desc">${project.description || ''}</div>
-            <div class="assignee" style="margin-top: auto;">
-                <img src="${teamUsers.find(u => u.id === project.assignee)?.avatar || getDefaultAvatar(project.assignee || 'unassigned')}" alt="Avatar" class="avatar-sm">
-                <span class="assignee-name">${teamUsers.find(u => u.id === project.assignee)?.name || 'Sin Asignar'}</span>
+            <div class="swimlane-project-desc" style="margin-bottom:auto;">
+                ${causesHtml}
             </div>
         `;
-        infoElement.addEventListener('click', () => {
-            openProjectDescModal(project.id);
-        });
         rowElement.appendChild(infoElement);
 
         // Stage Cells
@@ -1032,13 +1035,16 @@ function renderRendicionBoard() {
             const cellElement = document.createElement('div');
             cellElement.className = 'swimlane-cell';
             cellElement.dataset.stageId = stage.id;
-            cellElement.dataset.projectId = project.id;
+            // Provide a default project id so drop events still work (to one of the causes)
+            cellElement.dataset.projectId = donorData.projects[0].id;
             
-            // Render Tasks (Tasks assigned to this rendicion stage)
-            const stageTasks = tasks.filter(t => t.project_id === project.id && t.status === stage.id);
-            stageTasks.forEach(task => {
-                const card = createTaskCard(task);
-                cellElement.appendChild(card);
+            // Render Tasks
+            donorData.projects.forEach(project => {
+                const stageTasks = tasks.filter(t => t.project_id === project.id && t.status === stage.id);
+                stageTasks.forEach(task => {
+                    const card = createTaskCard(task);
+                    cellElement.appendChild(card);
+                });
             });
 
             // Add Task Button
@@ -1049,9 +1055,8 @@ function renderRendicionBoard() {
                 editingTaskId = null;
                 document.getElementById('newTaskForm').reset();
                 document.getElementById('newTaskModal').querySelector('h2').textContent = 'Nueva Tarea (Rendición)';
-                document.getElementById('ntProjectId').value = project.id;
+                document.getElementById('ntProjectId').value = donorData.projects[0].id;
                 document.getElementById('ntStageId').value = stage.id;
-                // Temporarily update stage dropdown to include rendicion stages
                 updateTaskStageDropdown(true); 
                 openModal('newTaskModal');
             });
@@ -1629,14 +1634,20 @@ function setupInteractions() {
     // Subtasks inside Task Details Modal
     document.getElementById('addSubtaskBtn')?.addEventListener('click', async () => {
         const input = document.getElementById('newSubtaskInput');
+        const assigneeSelect = document.getElementById('newSubtaskAssignee');
         const text = input.value.trim();
         if (!text || !currentDetailTaskId) return;
         
         const task = tasks.find(t => t.id === currentDetailTaskId);
         if (task) {
             if (!task.checklist) task.checklist = [];
-            task.checklist.push({ text, completed: false });
+            task.checklist.push({ 
+                text, 
+                completed: false, 
+                assignee: assigneeSelect ? assigneeSelect.value : '' 
+            });
             input.value = '';
+            if (assigneeSelect) assigneeSelect.value = '';
             
             await upsertTask(task);
             renderTaskChecklist(task.checklist);
@@ -1661,10 +1672,12 @@ function populateSelects() {
     
     const projectUserSelect = document.getElementById('npAssignee');
     const taskUserSelect = document.getElementById('ntAssignee');
+    const subtaskUserSelect = document.getElementById('newSubtaskAssignee');
     const userOptions = teamUsers.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
     
     if(projectUserSelect) projectUserSelect.innerHTML = userOptions || '<option value="">Sin Asignar</option>';
     if(taskUserSelect) taskUserSelect.innerHTML = userOptions || '<option value="">Sin Asignar</option>';
+    if(subtaskUserSelect) subtaskUserSelect.innerHTML = '<option value="">Sin Asignar</option>' + userOptions;
 
     const filterAssigneeSelect = document.getElementById('filterAssignee');
     if (filterAssigneeSelect) {
@@ -1759,12 +1772,24 @@ function renderTaskChecklist(checklist) {
     checklist.forEach((item, index) => {
         if (item.completed) completedCount++;
         
+        let assigneeHtml = '';
+        if (item.assignee) {
+            const user = teamUsers.find(u => u.id === item.assignee);
+            if (user) {
+                assigneeHtml = `<span style="font-size: 0.75rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem; margin-left: auto; background: var(--bg-elevated); padding: 0.15rem 0.4rem; border-radius: 12px; border: 1px solid var(--border-subtle);"><img src="${user.avatar || getDefaultAvatar(user.id)}" style="width: 16px; height: 16px; border-radius: 50%;"> ${user.name}</span>`;
+            }
+        }
+
         const li = document.createElement('li');
         li.className = 'checklist-item' + (item.completed ? ' completed' : '');
+        li.style.display = 'flex';
+        li.style.alignItems = 'center';
+        li.style.gap = '0.5rem';
         
         li.innerHTML = `
             <input type="checkbox" ${item.completed ? 'checked' : ''} data-index="${index}">
-            <span class="checklist-text">${item.text}</span>
+            <span class="checklist-text" style="flex-grow: 1;">${item.text}</span>
+            ${assigneeHtml}
             <button class="btn-icon delete-checklist-btn" data-index="${index}" title="Eliminar"><i class="ph ph-trash"></i></button>
         `;
         

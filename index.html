@@ -487,7 +487,10 @@
                         <div class="progress-bar-container"><div class="progress-bar" id="tdProgress"></div></div>
                         <ul id="tdChecklist" class="checklist"></ul>
                         <div class="add-task-container">
-                            <input type="text" id="newSubtaskInput" placeholder="Añadir subtarea...">
+                            <input type="text" id="newSubtaskInput" placeholder="Añadir subtarea..." style="flex-grow: 1;">
+                            <select id="newSubtaskAssignee" style="width: 140px; font-size: 0.85rem; padding: 0.5rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary);">
+                                <option value="">Sin Asignar</option>
+                            </select>
                             <button id="addSubtaskBtn" class="btn-secondary btn-sm">Añadir</button>
                         </div>
                     </div>
