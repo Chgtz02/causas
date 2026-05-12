@@ -1641,13 +1641,14 @@ function setupInteractions() {
         const task = tasks.find(t => t.id === currentDetailTaskId);
         if (task) {
             if (!task.checklist) task.checklist = [];
+            const assignees = assigneeSelect ? Array.from(assigneeSelect.selectedOptions).map(opt => opt.value) : [];
             task.checklist.push({ 
                 text, 
                 completed: false, 
-                assignee: assigneeSelect ? assigneeSelect.value : '' 
+                assignees: assignees 
             });
             input.value = '';
-            if (assigneeSelect) assigneeSelect.value = '';
+            if (assigneeSelect) assigneeSelect.selectedIndex = -1;
             
             await upsertTask(task);
             renderTaskChecklist(task.checklist);
@@ -1677,7 +1678,7 @@ function populateSelects() {
     
     if(projectUserSelect) projectUserSelect.innerHTML = userOptions || '<option value="">Sin Asignar</option>';
     if(taskUserSelect) taskUserSelect.innerHTML = userOptions || '<option value="">Sin Asignar</option>';
-    if(subtaskUserSelect) subtaskUserSelect.innerHTML = '<option value="">Sin Asignar</option>' + userOptions;
+    if(subtaskUserSelect) subtaskUserSelect.innerHTML = userOptions;
 
     const filterAssigneeSelect = document.getElementById('filterAssignee');
     if (filterAssigneeSelect) {
@@ -1773,11 +1774,16 @@ function renderTaskChecklist(checklist) {
         if (item.completed) completedCount++;
         
         let assigneeHtml = '';
-        if (item.assignee) {
-            const user = teamUsers.find(u => u.id === item.assignee);
-            if (user) {
-                assigneeHtml = `<span style="font-size: 0.75rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem; margin-left: auto; background: var(--bg-elevated); padding: 0.15rem 0.4rem; border-radius: 12px; border: 1px solid var(--border-subtle);"><img src="${user.avatar || getDefaultAvatar(user.id)}" style="width: 16px; height: 16px; border-radius: 50%;"> ${user.name}</span>`;
-            }
+        const itemAssignees = item.assignees || (item.assignee ? [item.assignee] : []);
+        if (itemAssignees.length > 0) {
+            assigneeHtml = '<div style="display: flex; gap: 0.25rem; margin-left: auto; flex-wrap: wrap; justify-content: flex-end;">';
+            itemAssignees.forEach(assigneeId => {
+                const user = teamUsers.find(u => u.id === assigneeId);
+                if (user) {
+                    assigneeHtml += `<span style="font-size: 0.75rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem; background: var(--bg-elevated); padding: 0.15rem 0.4rem; border-radius: 12px; border: 1px solid var(--border-subtle);" title="${user.name}"><img src="${user.avatar || getDefaultAvatar(user.id)}" style="width: 16px; height: 16px; border-radius: 50%;"> <span style="max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.name.split(' ')[0]}</span></span>`;
+                }
+            });
+            assigneeHtml += '</div>';
         }
 
         const li = document.createElement('li');
